@@ -24,7 +24,7 @@ class Annotations(Linter):
     regex = '.*'  # Placeholder so that linter will activate
 
     # We use this to do the matching
-    match_re = r'^.*?(?P<message>(?:(?P<warning>{warnings})|(?P<error>{errors})).*)'
+    match_re = r'^.*?(?P<message>(?:(?P<warning>{warnings})|(?P<error>{errors})|(?P<info>{infos})).*)'
 
     # We are only interested in comments
     selectors = {
@@ -32,6 +32,7 @@ class Annotations(Linter):
     }
 
     defaults = {
+        '-infos:,': ['NOTE', 'INFO'],
         '-errors:,': ['FIXME'],
         '-warnings:,': ['TODO', 'README']
     }
@@ -50,6 +51,7 @@ class Annotations(Linter):
         options = {}
 
         type_map = {
+            'infos': [],
             'errors': [],
             'warnings': []
         }
@@ -91,7 +93,11 @@ class Annotations(Linter):
                     error_type = highlight.ERROR
                 else:
                     word = match.group('warning')
-                    error_type = highlight.WARNING
+                    if word:
+                        error_type = highlight.WARNING
+                    else:
+                        word = match.group('info')
+                        error_type = highlight.INFO
 
                 if persist.debug_mode():
                     output.append('line {}, col {}: {}'.format(i + 1, col + 1, message))
